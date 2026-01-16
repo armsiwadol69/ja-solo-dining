@@ -1,8 +1,9 @@
-import { FilterX } from 'lucide-react';
+import { useState } from 'react';
+import { FilterX, ChevronDown, Check } from 'lucide-react';
 import { AlcoholType, RestaurantStyle } from '@/types';
 
 interface FilterState {
-    city: string;
+    city: string[];
     style: RestaurantStyle | 'all';
     cuisine: string;
     alcohol: AlcoholType | 'all';
@@ -17,9 +18,23 @@ interface FilterSidebarProps {
 }
 
 export default function FilterSidebar({ filters, setFilters, availableCities, className = "" }: FilterSidebarProps) {
+    const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
 
     const handleChange = (key: keyof FilterState, value: any) => {
         setFilters({ ...filters, [key]: value });
+    };
+
+    const toggleCity = (city: string) => {
+        const current = filters.city;
+        // Handle "All" represented as empty array
+        const newCities = current.includes(city)
+            ? current.filter(c => c !== city)
+            : [...current, city];
+        handleChange('city', newCities);
+    };
+
+    const clearCities = () => {
+        handleChange('city', []);
     };
 
     return (
@@ -36,34 +51,47 @@ export default function FilterSidebar({ filters, setFilters, availableCities, cl
             </div>
 
             <div className="space-y-6">
-                {/* City Filter */}
+                {/* City Filter (Multi-Select Dropdown) */}
                 <div>
                     <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-2">เมือง (City)</label>
-                    <div className="space-y-2">
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                            <input
-                                type="radio"
-                                name="city"
-                                value="all"
-                                checked={filters.city === 'all'}
-                                onChange={() => handleChange('city', 'all')}
-                                className="text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-700"
-                            />
-                            <span className="text-sm text-slate-700 dark:text-slate-300">ทั้งหมด</span>
-                        </label>
-                        {availableCities.map(city => (
-                            <label key={city} className="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="city"
-                                    value={city}
-                                    checked={filters.city === city}
-                                    onChange={() => handleChange('city', city)}
-                                    className="text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-700"
-                                />
-                                <span className="text-sm text-slate-700 dark:text-slate-300">{city}</span>
-                            </label>
-                        ))}
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
+                            className="w-full flex items-center justify-between text-left text-sm border border-slate-300 dark:border-slate-700 rounded-md shadow-sm p-2 bg-white dark:bg-slate-800 dark:text-slate-200 hover:border-indigo-500 transition-colors"
+                        >
+                            <span className="truncate">
+                                {filters.city.length === 0 ? 'ทั้งหมด (All)' : `เลือกแล้ว ${filters.city.length} เมือง`}
+                            </span>
+                            <ChevronDown size={16} className={`transition-transform duration-200 ${isCityDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {isCityDropdownOpen && (
+                            <div className="mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                                <div
+                                    className="px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer flex items-center text-sm text-slate-700 dark:text-slate-200 border-b border-slate-100 dark:border-slate-700"
+                                    onClick={clearCities}
+                                >
+                                    <div className={`w-4 h-4 mr-2 border border-slate-300 dark:border-slate-600 rounded flex items-center justify-center ${filters.city.length === 0 ? 'bg-indigo-600 border-indigo-600' : ''}`}>
+                                        {filters.city.length === 0 && <Check size={12} className="text-white" />}
+                                    </div>
+                                    ทั้งหมด (All)
+                                </div>
+                                <div className="max-h-48 overflow-y-auto custom-scroll">
+                                    {availableCities.map(city => (
+                                        <div
+                                            key={city}
+                                            className="px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer flex items-center text-sm text-slate-700 dark:text-slate-200"
+                                            onClick={() => toggleCity(city)}
+                                        >
+                                            <div className={`w-4 h-4 mr-2 border border-slate-300 dark:border-slate-600 rounded flex items-center justify-center ${filters.city.includes(city) ? 'bg-indigo-600 border-indigo-600' : ''}`}>
+                                                {filters.city.includes(city) && <Check size={12} className="text-white" />}
+                                            </div>
+                                            {city}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

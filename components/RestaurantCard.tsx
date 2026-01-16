@@ -134,10 +134,10 @@ export default function RestaurantCard({ restaurant, exchangeRate, onClick }: Re
 
             <div className="bg-slate-50 dark:bg-slate-900/50 px-5 py-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-xs">
                 <div className="flex items-center font-medium">
+                    <span className="mr-1 text-slate-500 dark:text-slate-400 hidden sm:inline">คะแนนความโซโล่</span>
                     {stars.map((filled, i) => (
                         <Star key={i} size={14} className={filled ? "fill-yellow-500 text-yellow-500" : "text-slate-300 dark:text-slate-600"} />
                     ))}
-                    <span className="ml-1 text-slate-500 dark:text-slate-400 hidden sm:inline">Solo Score</span>
                 </div>
                 <div className="text-slate-500 dark:text-slate-400 text-right">
                     {isNomihodai

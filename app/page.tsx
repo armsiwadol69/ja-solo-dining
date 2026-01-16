@@ -12,7 +12,7 @@ import Navbar from '@/components/Navbar';
 import RestaurantModal from '@/components/RestaurantModal';
 
 interface FilterState {
-  city: string;
+  city: string[];
   style: RestaurantStyle | 'all';
   cuisine: string;
   alcohol: AlcoholType | 'all';
@@ -30,7 +30,7 @@ export default function Home() {
 
   // Filters State
   const [filters, setFilters] = useState<FilterState>({
-    city: 'all',
+    city: [],
     style: 'all',
     cuisine: 'all',
     alcohol: 'all',
@@ -68,7 +68,7 @@ export default function Home() {
 
   const filteredRestaurants = useMemo(() => {
     let result = restaurants.filter(r => {
-      const matchCity = filters.city === 'all' || r.cities.includes(filters.city);
+      const matchCity = filters.city.length === 0 || r.cities.some(c => filters.city.includes(c));
       const matchStyle = filters.style === 'all' || r.style === filters.style;
       const matchCuisine = filters.cuisine === 'all' || r.cuisine === filters.cuisine;
 

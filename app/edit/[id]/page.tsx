@@ -166,7 +166,7 @@ export default function EditRestaurant({ params }: { params: Promise<{ id: strin
             const newImageUrls: string[] = [];
             if (selectedFiles.length > 0) {
                 const compressionOptions = {
-                    maxWidthOrHeight: 1080,
+                    maxWidthOrHeight: 720,
                     useWebWorker: true,
                     fileType: "image/webp",
                     maxSizeMB: 0.5
