@@ -1,0 +1,38 @@
+{
+  "name": "ja-solo-dining",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@types/aos": "^3.0.7",
+    "aos": "^2.3.4",
+    "browser-image-compression": "^2.0.2",
+    "chart.js": "^4.5.1",
+    "clsx": "^2.1.1",
+    "firebase": "^12.8.0",
+    "lucide-react": "^0.562.0",
+    "next": "16.1.2",
+    "next-themes": "^0.4.6",
+    "react": "19.2.3",
+    "react-chartjs-2": "^5.3.1",
+    "react-dom": "19.2.3",
+    "react-hook-form": "^7.71.1",
+    "swiper": "^12.0.3",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

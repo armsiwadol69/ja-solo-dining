@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kansai Solo Dining: Complete Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans Thai', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            height: 250px;
+        }
+
+        .card-hover {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: #cbd5e1;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* Custom Scrollbar for list */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+    <!-- Chosen Palette: "Modern Clean" - Slate/White background, Indigo primary, with semantic colors for tags (Red=Buffet, Green=AlaCarte). -->
+    <!-- Application Structure Plan:
+         1. Top Bar: Global Exchange Rate setting & Total Count.
+         2. Filter Sidebar (Desktop) / Dropdown (Mobile): Robust filtering logic.
+         3. Main Content: Grid of cards.
+         4. Analytics: Simplified visual summary at the top.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+
+<body class="min-h-screen flex flex-col md:flex-row">
+
+    <!-- Mobile Header & Controls -->
+    <div class="md:hidden bg-white border-b p-4 sticky top-0 z-50 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-lg font-bold text-slate-800">🇯🇵 Kansai Solo Dining</h1>
+            <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md font-bold">100¥ = 20฿</span>
+        </div>
+        <button onclick="document.getElementById('mobile-filters').classList.toggle('hidden')"
+            class="w-full bg-slate-100 text-slate-700 py-2 rounded-lg font-medium text-sm flex justify-center items-center">
+            <span>⚙️ ตัวกรอง / ค้นหา</span>
+        </button>
+        <div id="mobile-filters" class="hidden mt-4 space-y-3 pb-2 border-b">
+            <!-- Mobile filters inserted via JS logic or simplified duplicate -->
+            <p class="text-xs text-center text-gray-400">โปรดใช้เมนูด้านล่างหรือบนหน้าจอ Desktop
+                เพื่อการกรองที่ละเอียดกว่า</p>
+        </div>
+    </div>
+
+    <!-- Sidebar (Desktop) / Filter Panel -->
+    <aside
+        class="w-full md:w-72 bg-white border-r border-slate-200 flex-shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto hidden md:block p-6">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Kansai<br><span class="text-indigo-600">Solo
+                    Dining</span></h1>
+            <p class="text-xs text-slate-500 mt-2">รวมร้านเด็ด โอซาก้า-เกียวโต<br>ฉบับอัปเดตครบถ้วน</p>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Filter: City -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">เมือง (City)</label>
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="city" value="all" checked onchange="applyFilters()"
+                            class="text-indigo-600 focus:ring-indigo-500">
+                        <span class="text-sm text-slate-700">ทั้งหมด</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="city" value="Osaka" onchange="applyFilters()"
+                            class="text-indigo-600 focus:ring-indigo-500">
+                        <span class="text-sm text-slate-700">โอซาก้า (Osaka)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="city" value="Kyoto" onchange="applyFilters()"
+                            class="text-indigo-600 focus:ring-indigo-500">
+                        <span class="text-sm text-slate-700">เกียวโต (Kyoto)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Filter: Type -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">รูปแบบ (Style)</label>
+                <select id="filter-style" onchange="applyFilters()"
+                    class="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-200">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="Buffet">บุฟเฟ่ต์ (Buffet)</option>
+                    <option value="AlaCarte">จานเดี่ยว (A La Carte)</option>
+                </select>
+            </div>
+
+            <!-- Filter: Cuisine -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">ประเภทอาหาร</label>
+                <select id="filter-cuisine" onchange="applyFilters()"
+                    class="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-200">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="Yakiniku">เนื้อย่าง (Yakiniku)</option>
+                    <option value="Sushi">ซูชิ (Sushi)</option>
+                    <option value="Fried">ของทอด (Tempura/Kushikatsu)</option>
+                    <option value="Ramen">ราเมง (Ramen)</option>
+                    <option value="Rice">ข้าวหน้าต่างๆ (Rice Bowl)</option>
+                    <option value="Izakaya">อิซากายะ (Izakaya)</option>
+                </select>
+            </div>
+
+            <!-- Filter: Alcohol -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">แอลกอฮอล์</label>
+                <select id="filter-alcohol" onchange="applyFilters()"
+                    class="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-200">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="Nomihodai">มีบุฟเฟ่ต์เก๊กฮวย (Nomihodai)</option>
+                    <option value="PayPerGlass">สั่งแยกแก้ว</option>
+                </select>
+            </div>
+
+            <!-- Sort -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">เรียงลำดับ</label>
+                <select id="sort-price" onchange="applyFilters()"
+                    class="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-200">
+                    <option value="low">ราคาถูกสุดก่อน</option>
+                    <option value="high">ราคาแพงสุดก่อน</option>
+                </select>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100">
+                <div class="text-xs text-slate-400 mb-1">อัตราแลกเปลี่ยน (Rate)</div>
+                <div class="font-mono font-bold text-slate-600">0.20 THB / JPY</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow p-4 md:p-8 overflow-y-auto h-screen custom-scroll bg-slate-50">
+
+        <!-- Dashboard Widgets -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Widget 1: Count -->
+            <div
+                class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center items-center text-center">
+                <div class="text-4xl font-black text-indigo-600" id="display-count">0</div>
+                <div class="text-sm text-slate-500 font-medium">ร้านที่ตรงเงื่อนไข</div>
+            </div>
+
+            <!-- Widget 2: Price Analysis Chart -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 col-span-1 lg:col-span-2">
+                <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">งบประมาณเฉลี่ย (บาท) ตามประเภท</h3>
+                <div class="chart-container" style="height: 150px;">
+                    <canvas id="priceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Restaurant Grid -->
+        <div id="grid-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
+            <!-- Cards will be injected here -->
+        </div>
+
+    </main>
+
+    <script>
+        // --- DATASET: RECOVERED & EXPANDED ---
+        const restaurants = [
+            // --- YAKINIKU (เนื้อย่าง) ---
+            {
+                id: 1, name: "Yakiniku Rikimaru", city: "Osaka", cuisine: "Yakiniku", style: "Buffet",
+                price: 3500, alcohol: { type: "Nomihodai", price: 1300 },
+                solo: 5, desc: "ร้านดังขวัญใจคนไทย มีเมนูภาษาไทย สั่งผ่านแท็บเล็ตง่ายมาก คุณภาพเนื้อคุ้มราคา",
+                tags: ["Namba", "Umeda", "เตาถ่าน"]
+            },
+            {
+                id: 2, name: "Chifaja", city: "Kyoto", cuisine: "Yakiniku", style: "Buffet",
+                price: 3300, alcohol: { type: "Nomihodai", price: 1100 },
+                solo: 4, desc: "บุฟเฟ่ต์เก่าแก่ในเกียวโต สาขา Kawaramachi มีที่นั่งแบบกึ่งส่วนตัว",
+                tags: ["Kawaramachi", "ราคาดี", "Local"]
+            },
+            {
+                id: 3, name: "Aburiya", city: "Osaka", cuisine: "Yakiniku", style: "Buffet",
+                price: 4400, alcohol: { type: "Nomihodai", price: 1650 },
+                solo: 3, desc: "เกรดพรีเมียมขึ้นมาหน่อย บริการดีเยี่ยมเหมือนโรงแรม เนื้อลายสวย แนะนำจอง",
+                tags: ["วิวสวย", "เนื้อญี่ปุ่น", "Dotonbori"]
+            },
+            {
+                id: 4, name: "Yakiniku Like", city: "Kyoto", cuisine: "Yakiniku", style: "AlaCarte",
+                price: 1500, alcohol: { type: "PayPerGlass", price: 550 },
+                solo: 5, desc: "ฟาสต์ฟู้ดเนื้อย่าง เตาเดี่ยว 100% เหมาะสำหรับกินคนเดียวแบบเร่งด่วน",
+                tags: ["Solo 100%", "ราคาประหยัด", "มีหลายสาขา"]
+            },
+            {
+                id: 5, name: "Gyu-Kaku", city: "Osaka", cuisine: "Yakiniku", style: "Buffet",
+                price: 3500, alcohol: { type: "Nomihodai", price: 1500 },
+                solo: 4, desc: "เชนร้านเนื้อย่างที่มีสาขาทั่วโลก มาตรฐานรสชาติไว้ใจได้ มีทั้งบุฟเฟ่ต์และสั่งแยก",
+                tags: ["Chain", "มาตรฐาน", "ทั่วเมือง"]
+            },
+
+            // --- SUSHI (ซูชิ) ---
+            {
+                id: 6, name: "Kura Sushi", city: "Osaka", cuisine: "Sushi", style: "AlaCarte",
+                price: 2000, alcohol: { type: "PayPerGlass", price: 500 },
+                solo: 5, desc: "ซูชิสายพานที่มี 'Muten' (ไม่ใส่ผงชูรส) มีบูธส่วนตัว นั่งคนเดียวสบายมาก",
+                tags: ["จานละ 115¥", "เล่นเกม", "ทั่วเมือง"]
+            },
+            {
+                id: 7, name: "Musashi Sushi", city: "Kyoto", cuisine: "Sushi", style: "AlaCarte",
+                price: 2800, alcohol: { type: "PayPerGlass", price: 600 },
+                solo: 4, desc: "ซูชิสายพานหน้าสถานีเกียวโต เชฟปั้นให้เห็นสดๆ คุณภาพดีกว่าร้าน 100 เยน",
+                tags: ["Kyoto Station", "เคาน์เตอร์ยาว", "ปั้นสด"]
+            },
+            {
+                id: 8, name: "Sushiro", city: "Osaka", cuisine: "Sushi", style: "AlaCarte",
+                price: 1800, alcohol: { type: "PayPerGlass", price: 480 },
+                solo: 5, desc: "ร้านซูชิสายพานยอดขายอันดับ 1 วัตถุดิบหลากหลาย เปลี่ยนโปรโมชั่นบ่อย",
+                tags: ["Chain", "เมนูเยอะ", "ทั่วเมือง"]
+            },
+            {
+                id: 9, name: "Daiki Suisan", city: "Osaka", cuisine: "Sushi", style: "AlaCarte",
+                price: 3000, alcohol: { type: "PayPerGlass", price: 550 },
+                solo: 4, desc: "ซูชิสายพานเกรดพรีเมียมใน Dotonbori ปลาสดชิ้นใหญ่กว่าร้านทั่วไป",
+                tags: ["Dotonbori", "ปลาสด", "นักท่องเที่ยวเยอะ"]
+            },
+
+            // --- FRIED / KUSHIKATSU / TEMPURA ---
+            {
+                id: 10, name: "Kushikatsu Monogatari", city: "Osaka", cuisine: "Fried", style: "Buffet",
+                price: 2500, alcohol: { type: "Nomihodai", price: 1500 },
+                solo: 5, desc: "บุฟเฟ่ต์ของทอดเสียบไม้ มีหม้อทอดส่วนตัวที่โต๊ะ เลือกชุบแป้งเอง สนุกมาก",
+                tags: ["ทอดเอง", "ของหวาน", "Umeda"]
+            },
+            {
+                id: 11, name: "Kushikatsu Daruma", city: "Osaka", cuisine: "Fried", style: "AlaCarte",
+                price: 2200, alcohol: { type: "PayPerGlass", price: 500 },
+                solo: 4, desc: "ร้านหน้าลุงโกรธในตำนาน น้ำจิ้มรสเด็ด (ปัจจุบันเป็นแบบเท)",
+                tags: ["Landmark", "Dotonbori", "กรอบอร่อย"]
+            },
+            {
+                id: 12, name: "Tempura Makino", city: "Kyoto", cuisine: "Fried", style: "AlaCarte",
+                price: 1800, alcohol: { type: "PayPerGlass", price: 600 },
+                solo: 4, desc: "เทมปุระทอดสดทีละชิ้นเสิร์ฟที่เคาน์เตอร์ คุ้มค่ามากสำหรับราคานี้",
+                tags: ["Teramachi", "ทอดสด", "ไข่เทมปุระ"]
+            },
+            {
+                id: 13, name: "Miyako Yasai Kamo", city: "Kyoto", cuisine: "Fried", style: "Buffet",
+                price: 1100, alcohol: { type: "PayPerGlass", price: 500 },
+                solo: 4, desc: "บุฟเฟ่ต์ผักและ Obanzai (กับข้าวเกียวโต) ราคาถูกมาก เน้นสุขภาพ",
+                tags: ["ผักสด", "ราคาถูก", "Shijo"]
+            },
+
+            // --- RAMEN & OTHERS ---
+            {
+                id: 14, name: "Ichiran Ramen", city: "Osaka", cuisine: "Ramen", style: "AlaCarte",
+                price: 1200, alcohol: { type: "PayPerGlass", price: 580 },
+                solo: 5, desc: "ราเมงข้อสอบ คอกกั้นส่วนตัว โฟกัสกับรสชาติซุปกระดูกหมูเข้มข้น",
+                tags: ["Dotonbori", "เปิด 24 ชม", "Solo Legend"]
+            },
+            {
+                id: 15, name: "Tenkaippin", city: "Kyoto", cuisine: "Ramen", style: "AlaCarte",
+                price: 1000, alcohol: { type: "PayPerGlass", price: 500 },
+                solo: 4, desc: "ราเมงซุปไก่ข้นคลั่ก (Kotteri) ต้นตำรับจากเกียวโต",
+                tags: ["Local Favorite", "ซุปข้น", "ทั่วเมือง"]
+            },
+            {
+                id: 16, name: "Matsuya / Sukiya", city: "Osaka", cuisine: "Rice", style: "AlaCarte",
+                price: 700, alcohol: { type: "PayPerGlass", price: 350 },
+                solo: 5, desc: "ร้านข้าวหน้าเนื้อ 24 ชม. ราคาประหยัดสุดๆ สั่งผ่านตู้",
+                tags: ["ประหยัด", "24 ชม", "ทั่วญี่ปุ่น"]
+            },
+            {
+                id: 17, name: "Isomaru Suisan", city: "Osaka", cuisine: "Izakaya", style: "AlaCarte",
+                price: 3000, alcohol: { type: "Nomihodai", price: 0 }, // Often included in sets, or cheap drinks
+                solo: 4, desc: "ร้านซีฟู้ดปิ้งย่างเปิด 24 ชม. มันปูย่างคือเดอะเบสท์ บรรยากาศครึกครื้น",
+                tags: ["มันปูย่าง", "24 ชม", "Dotonbori"]
+            }
+        ];
+
+        const THB_RATE = 0.20;
+        let chartInstance = null;
+
+        // --- CORE LOGIC ---
+        function init() {
+            initChart();
+            applyFilters();
+        }
+
+        function getFilterState() {
+            return {
+                city: document.querySelector('input[name="city"]:checked').value,
+                style: document.getElementById('filter-style').value,
+                cuisine: document.getElementById('filter-cuisine').value,
+                alcohol: document.getElementById('filter-alcohol').value,
+                sort: document.getElementById('sort-price').value
+            };
+        }
+
+        function applyFilters() {
+            const filters = getFilterState();
+
+            let filtered = restaurants.filter(r => {
+                const matchCity = filters.city === 'all' || r.city === filters.city;
+                const matchStyle = filters.style === 'all' || r.style === filters.style;
+                const matchCuisine = filters.cuisine === 'all' || r.cuisine === filters.cuisine;
+
+                let matchAlcohol = true;
+                if (filters.alcohol === 'Nomihodai') matchAlcohol = r.alcohol.type === 'Nomihodai';
+                if (filters.alcohol === 'PayPerGlass') matchAlcohol = r.alcohol.type === 'PayPerGlass';
+
+                return matchCity && matchStyle && matchCuisine && matchAlcohol;
+            });
+
+            // Sorting
+            filtered.sort((a, b) => filters.sort === 'low' ? a.price - b.price : b.price - a.price);
+
+            renderGrid(filtered);
+            updateChart(filtered);
+        }
+
+        function renderGrid(data) {
+            const container = document.getElementById('grid-container');
+            const countDisplay = document.getElementById('display-count');
+
+            countDisplay.innerText = data.length;
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+                        <div class="text-4xl mb-4">😔</div>
+                        <h3 class="text-lg font-medium text-slate-900">ไม่พบร้านอาหาร</h3>
+                        <p class="text-slate-500">ลองปรับตัวกรองให้กว้างขึ้น</p>
+                    </div>
+                `;
+                return;
+            }
+
+            data.forEach(item => {
+                const priceTHB = Math.round(item.price * THB_RATE).toLocaleString();
+                const priceYen = item.price.toLocaleString();
+                const alcPriceTHB = Math.round(item.alcohol.price * THB_RATE).toLocaleString();
+
+                // Badges
+                const styleBadge = item.style === 'Buffet'
+                    ? `<span class="badge bg-red-100 text-red-700 border border-red-200">Buffet</span>`
+                    : `<span class="badge bg-emerald-100 text-emerald-700 border border-emerald-200">A La Carte</span>`;
+
+                const alcBadge = item.alcohol.type === 'Nomihodai'
+                    ? `<span class="badge bg-blue-100 text-blue-700 border border-blue-200">🍺 บุฟเฟ่ต์เก๊กฮวย</span>`
+                    : `<span class="badge bg-slate-100 text-slate-600 border border-slate-200">🥃 จ่ายแยก</span>`;
+
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col card-hover";
+                card.innerHTML = `
+                    <div class="p-5 flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800 leading-tight">${item.name}</h3>
+                                <div class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                    <span>📍 ${item.city}</span> • <span>${item.cuisine}</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xl font-black text-indigo-600">฿${priceTHB}</div>
+                                <div class="text-xs text-slate-400">¥${priceYen}</div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${styleBadge}
+                            ${alcBadge}
+                        </div>
+
+                        <p class="text-sm text-slate-600 mb-4 leading-relaxed">${item.desc}</p>
+
+                        <div class="flex flex-wrap gap-1.5 mt-auto">
+                            ${item.tags.map(t => `<span class="px-2 py-0.5 bg-slate-50 text-slate-500 text-[10px] rounded border border-slate-100">${t}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <div class="flex items-center text-yellow-500 font-medium">
+                            ${'★'.repeat(item.solo)}<span class="text-slate-300">${'★'.repeat(5 - item.solo)}</span>
+                            <span class="ml-1 text-slate-500">Solo Score</span>
+                        </div>
+                        <div class="text-slate-500">
+                            ${item.alcohol.type === 'Nomihodai'
+                        ? `<span class="text-blue-600 font-semibold">+ดื่มไม่อั้น ~฿${alcPriceTHB}</span>`
+                        : `เครื่องดื่มเริ่ม ~฿${alcPriceTHB}`}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- CHART ---
+        function initChart() {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: true, color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function updateChart(data) {
+            const categories = ['Yakiniku', 'Sushi', 'Fried', 'Ramen'];
+            const avgData = categories.map(cat => {
+                const subset = data.filter(d => d.cuisine === cat);
+                if (!subset.length) return 0;
+                const total = subset.reduce((sum, item) => sum + (item.price * THB_RATE), 0);
+                return Math.round(total / subset.length);
+            });
+
+            chartInstance.data = {
+                labels: ['เนื้อย่าง', 'ซูชิ', 'ของทอด', 'ราเมง'],
+                datasets: [{
+                    label: 'บาท (เฉลี่ย)',
+                    data: avgData,
+                    backgroundColor: ['#f87171', '#60a5fa', '#fbbf24', '#a78bfa'],
+                    borderRadius: 4,
+                    barThickness: 30
+                }]
+            };
+            chartInstance.update();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+
+</html>
