@@ -22,35 +22,40 @@ ChartJS.register(
     Legend
 );
 
-const THB_RATE = 0.20;
+const THB_RATE_FALLBACK = 0.20;
 
-export default function DashboardCharts({ restaurants }: { restaurants: Restaurant[] }) {
+export default function DashboardCharts({ restaurants, exchangeRate = THB_RATE_FALLBACK }: { restaurants: Restaurant[], exchangeRate?: number }) {
 
     const chartData = useMemo(() => {
-        const categories = ['Yakiniku', 'Sushi', 'Fried', 'Ramen'];
-        const labels = ['เนื้อย่าง', 'ซูชิ', 'ของทอด', 'ราเมง'];
-        const colors = ['#f87171', '#60a5fa', '#fbbf24', '#a78bfa'];
+        // Dynamic approach: Get all unique cuisines from actual data
+        const uniqueCuisines = Array.from(new Set(restaurants.map(r => r.cuisine))).sort();
+
+        // If no data, use default categories to show empty chart
+        const categories = uniqueCuisines.length > 0 ? uniqueCuisines : ['Yakiniku', 'Sushi', 'Fried', 'Ramen', 'Rice', 'Izakaya'];
 
         const avgData = categories.map(cat => {
             const subset = restaurants.filter(d => d.cuisine === cat);
             if (!subset.length) return 0;
-            const total = subset.reduce((sum, item) => sum + (item.price * THB_RATE), 0);
+            const total = subset.reduce((sum, item) => sum + (item.price * exchangeRate), 0);
             return Math.round(total / subset.length);
         });
 
+        // Generate Colors dynamically
+        const backgroundColors = categories.map((_, i) => `hsl(${i * 60 + 200}, 70%, 70%)`);
+
         return {
-            labels,
+            labels: categories,
             datasets: [
                 {
                     label: 'บาท (เฉลี่ย)',
                     data: avgData,
-                    backgroundColor: colors,
+                    backgroundColor: backgroundColors,
                     borderRadius: 4,
                     barThickness: 30,
                 },
             ],
         };
-    }, [restaurants]);
+    }, [restaurants, exchangeRate]);
 
     const options = {
         responsive: true,

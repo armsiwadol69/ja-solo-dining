@@ -160,7 +160,7 @@ export default function Home() {
 
             {/* Widget 2: Chart */}
             <div className="col-span-1 lg:col-span-2">
-              <DashboardCharts restaurants={filteredRestaurants} />
+              <DashboardCharts restaurants={filteredRestaurants} exchangeRate={exchangeRate} />
             </div>
           </div>
 

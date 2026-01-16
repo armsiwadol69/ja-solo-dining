@@ -44,11 +44,11 @@ export default function FilterSidebar({ filters, setFilters, availableCities, ex
                 <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
                     Japan<br /><span className="text-indigo-600 dark:text-indigo-400">Solo Dining</span>
                 </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">รวมอาหารที่รับลูกค้าเดี่ยว
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">รวมร้านอาหารที่รับลูกค้ากินคนเดียว
                     <br />สำหรับคนที่ไปเที่ยวญี่ปุ่นคนเดียวเพราะหลายๆ สาเหตุ เช่น
                     <br />เพื่อนไม่คบ
                     <br />ต้องดูแลผัวอยู่บ้าน
-                    <br />ต้องเก็บตั้งไปซื้อปูนเลยไม่มีตังค์ไปด้วย เฮ้อ</p>
+                    <br />เพื่อนรักต้องเก็บตังค์ไปซื้อปูนเลยไม่มีตังค์ไปด้วย เฮ้อ</p>
             </div>
 
             <div className="space-y-6">
@@ -150,8 +150,8 @@ export default function FilterSidebar({ filters, setFilters, availableCities, ex
                         onChange={(e) => handleChange('sort', e.target.value as any)}
                         className="w-full text-sm border-slate-300 dark:border-slate-700 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-200 p-2 border bg-white dark:bg-slate-800 dark:text-slate-200"
                     >
-                        <option value="low">ราคาถูกสุดก่อน</option>
                         <option value="high">ราคาแพงสุดก่อน</option>
+                        <option value="low">ราคาถูกสุดก่อน</option>
                     </select>
                 </div>
 
