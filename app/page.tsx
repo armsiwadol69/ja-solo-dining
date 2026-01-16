@@ -11,6 +11,8 @@ import { SlidersHorizontal, Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import RestaurantModal from '@/components/RestaurantModal';
 
+import { getExchangeRate } from '@/lib/currency';
+
 interface FilterState {
   city: string[];
   style: RestaurantStyle | 'all';
@@ -23,6 +25,7 @@ export default function Home() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState(0.23); // Default fallback
 
   // Modal State
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
@@ -37,14 +40,21 @@ export default function Home() {
     sort: 'high',
   });
 
-  // Fetch Data
+  // Fetch Data & Exchange Rate
   useEffect(() => {
+    // 1. Fetch Restaurants
     const q = query(collection(db, "restaurants"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
       setRestaurants(data);
       setLoading(false);
     });
+
+    // 2. Fetch Exchange Rate
+    getExchangeRate().then(rate => {
+      setExchangeRate(rate);
+    });
+
     return () => unsubscribe();
   }, []);
 
@@ -101,6 +111,7 @@ export default function Home() {
           filters={filters}
           setFilters={setFilters}
           availableCities={availableCities}
+          exchangeRate={exchangeRate}
           className="hidden md:block w-72 flex-shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-slate-200 dark:border-slate-700"
         />
 
@@ -123,6 +134,7 @@ export default function Home() {
                   filters={filters}
                   setFilters={setFilters}
                   availableCities={availableCities}
+                  exchangeRate={exchangeRate}
                   className="border-none p-0 h-auto overflow-visible mb-4 bg-transparent dark:bg-transparent"
                 />
                 <p className="text-xs text-center text-gray-400 border-t dark:border-slate-700 pt-2">
@@ -170,7 +182,7 @@ export default function Home() {
                   <RestaurantCard
                     key={restaurant.id}
                     restaurant={restaurant}
-                    exchangeRate={0.20}
+                    exchangeRate={exchangeRate}
                     onClick={() => handleCardClick(restaurant)}
                   />
                 ))
@@ -185,7 +197,7 @@ export default function Home() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         restaurant={selectedRestaurant}
-        exchangeRate={0.20}
+        exchangeRate={exchangeRate}
       />
     </div>
   );

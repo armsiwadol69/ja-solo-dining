@@ -14,10 +14,11 @@ interface FilterSidebarProps {
     filters: FilterState;
     setFilters: (f: FilterState) => void;
     availableCities: string[];
+    exchangeRate: number;
     className?: string;
 }
 
-export default function FilterSidebar({ filters, setFilters, availableCities, className = "" }: FilterSidebarProps) {
+export default function FilterSidebar({ filters, setFilters, availableCities, exchangeRate, className = "" }: FilterSidebarProps) {
     const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
 
     const handleChange = (key: keyof FilterState, value: any) => {
@@ -156,7 +157,8 @@ export default function FilterSidebar({ filters, setFilters, availableCities, cl
 
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
                     <div className="text-xs text-slate-400 dark:text-slate-500 mb-1">อัตราแลกเปลี่ยน (Rate)</div>
-                    <div className="font-mono font-bold text-slate-600 dark:text-slate-300">0.20 THB / JPY</div>
+                    <div className="font-mono font-bold text-slate-600 dark:text-slate-300">{exchangeRate.toFixed(2)} THB / JPY</div>
+                    <div className="text-[10px] text-slate-300 dark:text-slate-600 mt-1">Source: ECB by Frankfurter API</div>
 
                     <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
                         <p className="text-[10px] text-slate-400 dark:text-slate-500">
