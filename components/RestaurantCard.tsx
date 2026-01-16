@@ -12,9 +12,10 @@ import 'swiper/css/pagination';
 interface RestaurantCardProps {
     restaurant: Restaurant;
     exchangeRate: number;
+    onClick?: () => void;
 }
 
-export default function RestaurantCard({ restaurant, exchangeRate }: RestaurantCardProps) {
+export default function RestaurantCard({ restaurant, exchangeRate, onClick }: RestaurantCardProps) {
     const { name, cities, cuisine, price, alcohol_type, alcohol_price, solo_rating, description, tags, style, imageUrls } = restaurant;
 
     const priceTHB = Math.round(price * exchangeRate).toLocaleString();
@@ -34,9 +35,10 @@ export default function RestaurantCard({ restaurant, exchangeRate }: RestaurantC
 
     return (
         <div
-            className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col hover:translate-y-[-3px] hover:shadow-md transition-all duration-200 group"
+            className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col hover:translate-y-[-3px] hover:shadow-md transition-all duration-200 group ${onClick ? 'cursor-pointer' : ''}`}
             data-aos="fade-up"
             data-aos-duration="600"
+            onClick={onClick}
         >
             {/* Thumbnail */}
             <div className="relative h-48 w-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
@@ -85,6 +87,7 @@ export default function RestaurantCard({ restaurant, exchangeRate }: RestaurantC
                 {/* Edit Button - Only visible on hover/focus */}
                 <Link
                     href={restaurant.id ? `/edit/${restaurant.id}` : '#'}
+                    onClick={(e) => e.stopPropagation()}
                     className="absolute top-2 right-2 p-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-full text-slate-700 dark:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-slate-800 z-10"
                     title="Edit Restaurant"
                 >

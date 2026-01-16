@@ -9,6 +9,7 @@ import FilterSidebar from '@/components/FilterSidebar';
 import DashboardCharts from '@/components/DashboardCharts';
 import { SlidersHorizontal, Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import RestaurantModal from '@/components/RestaurantModal';
 
 interface FilterState {
   city: string;
@@ -23,13 +24,17 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
+  // Modal State
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Filters State
   const [filters, setFilters] = useState<FilterState>({
     city: 'all',
     style: 'all',
     cuisine: 'all',
     alcohol: 'all',
-    sort: 'low',
+    sort: 'high',
   });
 
   // Fetch Data
@@ -42,6 +47,17 @@ export default function Home() {
     });
     return () => unsubscribe();
   }, []);
+
+  // Modal Handlers
+  const handleCardClick = (restaurant: Restaurant) => {
+    setSelectedRestaurant(restaurant);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedRestaurant(null), 300); // Clear after animation
+  };
 
   // Derived Data
   const availableCities = useMemo(() => {
@@ -123,11 +139,11 @@ export default function Home() {
               {loading ? (
                 <Loader2 className="animate-spin text-indigo-600 dark:text-indigo-400 mb-2" />
               ) : (
-                <div className="text-4xl font-black text-indigo-600 dark:text-indigo-400">
+                <div className="text-6xl font-black text-indigo-600 dark:text-indigo-400">
                   {filteredRestaurants.length}
                 </div>
               )}
-              <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">ร้านที่ตรงเงื่อนไข</div>
+              <div className="text-md text-slate-500 dark:text-slate-400 font-medium">ร้านที่ตรงเงื่อนไข</div>
             </div>
 
             {/* Widget 2: Chart */}
@@ -155,6 +171,7 @@ export default function Home() {
                     key={restaurant.id}
                     restaurant={restaurant}
                     exchangeRate={0.20}
+                    onClick={() => handleCardClick(restaurant)}
                   />
                 ))
               )}
@@ -162,6 +179,14 @@ export default function Home() {
           )}
         </main>
       </div>
+
+      {/* Detail Modal */}
+      <RestaurantModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        restaurant={selectedRestaurant}
+        exchangeRate={0.20}
+      />
     </div>
   );
 }
